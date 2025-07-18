@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Waste Classification{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="predict-container fade-in">
+            <h2 style="text-align: center; margin-bottom: 2rem;">Waste Classification</h2>
+            
+            <form id="upload-form" action="{{ url_for('predict') }}" method="POST" enctype="multipart/form-data">
+                <div class="upload-area" onclick="document.getElementById('file-upload').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Upload Your Image</h3>
+                    <p>Click to browse or drag and drop</p>
+                    <p class="small">Supports: JPG, PNG, JPEG</p>
+                    <input type="file" id="file-upload" name="file" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Classify Waste</button>
+            </form>
+            
+            {% if prediction %}
+            <div class="result-container" style="display: block;">
+                <img src="{{ url_for('static', filename='uploads/' + image_path.split('/')[-1]) }}" class="result-image" alt="Uploaded waste image">
+                <div class="result-details">
+                    <h3>Classification Result</h3>
+                    <p class="prediction-text">This item is: <strong>{{ prediction }}</strong></p>
+                    <p>Confidence: <strong>{{ "%.2f"|format(confidence * 100) }}%</strong></p>
+                    <div class="confidence-meter">
+                        <div class="confidence-level" data-confidence="{{ confidence }}" style="width: {{ confidence * 100 }}%;"></div>
+                    </div>
+                    <a href="{{ url_for('predict') }}" class="btn btn-outline" style="margin-top: 1rem; display: inline-block;">Try Another</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Add this script for better file upload handling -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('file-upload');
+    const uploadArea = document.querySelector('.upload-area');
+    
+    // Handle file selection
+    fileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const fileName = this.files[0].name;
+            uploadArea.querySelector('p:nth-of-type(1)').textContent = fileName;
+        }
+    });
+
+    // Handle drag and drop
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.style.borderColor = '#00e676';
+    });
+
+    uploadArea.addEventListener('dragleave', function() {
+        this.style.borderColor = '#444444';
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.style.borderColor = '#444444';
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            const fileName = e.dataTransfer.files[0].name;
+            this.querySelector('p:nth-of-type(1)').textContent = fileName;
+        }
+    });
+});
+</script>
+{% endblock %}
